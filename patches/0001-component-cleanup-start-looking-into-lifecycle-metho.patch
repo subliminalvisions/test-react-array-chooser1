@@ -1,0 +1,1098 @@
+From a55f43364793cec155195007ca9318a99038b1fc Mon Sep 17 00:00:00 2001
+From: Stephen Harris <stephenharris@Stephens-MacBook-Pro-2.local>
+Date: Wed, 21 May 2025 21:47:37 -0600
+Subject: [PATCH] component cleanup + start looking into lifecycle methods
+
+---
+ .gitignore                                   |   3 +
+ public/scripts/app.js                        |  86 +++++++-----
+ src/app-versions/app-v1-with-user-example.js |  77 ++++++++++
+ src/app.js                                   |  90 ++++++------
+ src/test-playground/build-it-visible--v1.js  |  39 ++++++
+ src/test-playground/build-it-visible.js      |  41 ++++++
+ src/test-playground/commands-saved.txt       |   3 +
+ src/test-playground/counter-example copy.js  |  69 +++++++++
+ src/test-playground/counter-example.js       | 139 +++++++++++++++++++
+ src/test-playground/es6-arrow-function.js    |  46 ++++++
+ src/test-playground/es6-arrow-function2.js   |  37 +++++
+ src/test-playground/es6-classes-1.js         |  57 ++++++++
+ src/test-playground/es6const.js              |  33 +++++
+ src/test-playground/jsx-indecision-v1.js     |  95 +++++++++++++
+ 14 files changed, 735 insertions(+), 80 deletions(-)
+ create mode 100644 .gitignore
+ create mode 100644 src/app-versions/app-v1-with-user-example.js
+ create mode 100644 src/test-playground/build-it-visible--v1.js
+ create mode 100644 src/test-playground/build-it-visible.js
+ create mode 100644 src/test-playground/commands-saved.txt
+ create mode 100644 src/test-playground/counter-example copy.js
+ create mode 100644 src/test-playground/counter-example.js
+ create mode 100644 src/test-playground/es6-arrow-function.js
+ create mode 100644 src/test-playground/es6-arrow-function2.js
+ create mode 100644 src/test-playground/es6-classes-1.js
+ create mode 100644 src/test-playground/es6const.js
+ create mode 100644 src/test-playground/jsx-indecision-v1.js
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..aa32fbc
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++node_modules
++.DS_Store
++*.DS_Store
+\ No newline at end of file
+diff --git a/public/scripts/app.js b/public/scripts/app.js
+index f3f69fe..50e1f04 100644
+--- a/public/scripts/app.js
++++ b/public/scripts/app.js
+@@ -8,9 +8,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
+ 
+ function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+ 
+-// stateless functional component
+-
+-
++// a simple app to modify arrays & output to the screen
+ var IndecisionApp = function (_React$Component) {
+   _inherits(IndecisionApp, _React$Component);
+ 
+@@ -20,6 +18,7 @@ var IndecisionApp = function (_React$Component) {
+     var _this = _possibleConstructorReturn(this, (IndecisionApp.__proto__ || Object.getPrototypeOf(IndecisionApp)).call(this, props));
+ 
+     _this.handleDeleteOptions = _this.handleDeleteOptions.bind(_this);
++    _this.handleDeleteOption = _this.handleDeleteOption.bind(_this);
+     _this.handlePick = _this.handlePick.bind(_this);
+     _this.handleAddOption = _this.handleAddOption.bind(_this);
+     _this.state = {
+@@ -28,18 +27,43 @@ var IndecisionApp = function (_React$Component) {
+     return _this;
+   }
+ 
++  // life-cycle Methods
++
++
+   _createClass(IndecisionApp, [{
++    key: 'componentDidMount',
++    value: function componentDidMount() {
++      console.log('componentDidMount, fetching data');
++    }
++  }, {
++    key: 'componentDidUpdate',
++    value: function componentDidUpdate(prevProps, prevState) {
++      console.log('componentDidUpdate, saving data');
++    }
++  }, {
++    key: 'componentWillUnmount',
++    value: function componentWillUnmount() {
++      console.log('componentWillUnmount');
++    }
++  }, {
+     key: 'handleDeleteOptions',
+     value: function handleDeleteOptions() {
+       this.setState(function () {
++        return { options: [] };
++      });
++    }
++  }, {
++    key: 'handleDeleteOption',
++    value: function handleDeleteOption(optionToRemove) {
++      // console.log('H-D-O--test', option);
++      this.setState(function (prevState) {
+         return {
+-          options: []
++          options: prevState.options.filter(function (option) {
++            return optionToRemove !== option;
++          })
+         };
+       });
+     }
+-    // handlePick = pass down to Action and setup onClick - bind here 
+-    // randomly pick an option and alert it .. 
+-
+   }, {
+     key: 'handlePick',
+     value: function handlePick() {
+@@ -57,7 +81,6 @@ var IndecisionApp = function (_React$Component) {
+       }
+ 
+       this.setState(function (prevState) {
+-        // prevState.options.push(option);
+         return {
+           options: prevState.options.concat([option])
+         };
+@@ -79,7 +102,8 @@ var IndecisionApp = function (_React$Component) {
+         }),
+         React.createElement(Options, {
+           options: this.state.options,
+-          handleDeleteOptions: this.handleDeleteOptions
++          handleDeleteOptions: this.handleDeleteOptions,
++          handleDeleteOption: this.handleDeleteOption
+         }),
+         React.createElement(AddOption, {
+           handleAddOption: this.handleAddOption
+@@ -91,9 +115,6 @@ var IndecisionApp = function (_React$Component) {
+   return IndecisionApp;
+ }(React.Component);
+ 
+-// options: ['Thing one', 'Thing two', 'Thing three']
+-
+-
+ IndecisionApp.defaultProps = {
+   options: []
+ };
+@@ -117,7 +138,7 @@ var Header = function Header(props) {
+ };
+ 
+ Header.defaultProps = {
+-  title: 'InDecision'
++  title: 'InDecision APP'
+ };
+ 
+ var Action = function Action(props) {
+@@ -153,7 +174,12 @@ var Options = function Options(props) {
+       'ul',
+       null,
+       props.options.map(function (option) {
+-        return React.createElement(Option, { key: option, className: option, text: option });
++        return React.createElement(Option, {
++          key: option,
++          className: option,
++          optionText: option,
++          handleDeleteOption: props.handleDeleteOption
++        });
+       })
+     ),
+     React.createElement('br', null),
+@@ -165,7 +191,16 @@ var Option = function Option(props) {
+   return React.createElement(
+     'li',
+     null,
+-    props.text
++    props.optionText,
++    React.createElement(
++      'button',
++      {
++        onClick: function onClick(e) {
++          props.handleDeleteOption(props.optionText);
++        }
++      },
++      'remove'
++    )
+   );
+ };
+ 
+@@ -190,17 +225,9 @@ var AddOption = function (_React$Component2) {
+       e.preventDefault();
+       var option = e.target.elements.option.value.trim();
+       var error = this.props.handleAddOption(option);
+-      // // this.props.handleAddOption(option);
+       this.setState(function () {
+         return { error: error };
+       });
+-      // if (option) {
+-      //   this.props.handleAddOption(option);
+-      //   console.log('option:', option);
+-      // }
+-      // this.setState(() => {
+-      //   return { error };
+-      // });
+     }
+   }, {
+     key: 'render',
+@@ -230,15 +257,4 @@ var AddOption = function (_React$Component2) {
+   return AddOption;
+ }(React.Component);
+ 
+-// stateless functional component
+-// const User = (props) => {
+-//   return (
+-//     <div>
+-//       <p>Name: {props.name}</p>
+-//       <p>Age: {props.age}</p>
+-//     </div>
+-//   )
+-// }
+-
+-ReactDOM.render(React.createElement(IndecisionApp, { options: ['devil one', 'Thing two', 'Thing three'] }), document.getElementById('app'));
+-// ReactDOM.render(<User name="Andrew" age={26}/>, document.getElementById('app'));
++ReactDOM.render(React.createElement(IndecisionApp, null), document.getElementById('app'));
+diff --git a/src/app-versions/app-v1-with-user-example.js b/src/app-versions/app-v1-with-user-example.js
+new file mode 100644
+index 0000000..3bc4cdf
+--- /dev/null
++++ b/src/app-versions/app-v1-with-user-example.js
+@@ -0,0 +1,77 @@
++console.log('App.js is running!');
++
++// T2 instructions
++// create app object title/subtitle 
++// use title/subtitle in the template
++// render template 
++
++
++// only render subtitle (and p tag) if subtitle exists - (w/ Logical and Operator)
++//render new p tag - if options.length > 0 "Here are your options" "No Options"
++
++const app = {
++  title: 'Indecision App v1',
++  subtitle: 'to decide your fate for you',
++  options: ['One', 'Two'],
++  question1: 'question 1 text',
++  question2: 'other text for Q2',
++};
++
++// JSX = JavaScript XML
++const templateOne = (
++  <div className="wrap">
++    <h1 className="suma-class">{app.title}</h1> 
++    
++    {(app.subtitle) && <p className="subttile">{app.subtitle}</p>}
++
++    <p>{(app.options && app.options.length > 0) ? 'Here are your options: ' + app.options : 'No options'}</p>
++
++    <ol className="questionList">
++      <li>{app.question1}</li>
++      <li>{app.question2}</li>
++    </ol>    
++  </div>
++);
++ 
++// use const / let later 
++// if statements 
++// ternary operators 
++// logical and operator 
++
++const user = {
++  name: 'Stephen',
++  age: 26,
++  location: 'Denver'
++};
++function getLocation(location) {
++  if (location) {
++    return <p className="location">
++    location: {location}</p>
++  } else {
++    // return 'is undefined';
++    return undefined;
++  }  
++}
++// {user.name.toUpperCase() + "!!"}
++
++// Ternary Operator
++// true ? 'Andrew' : 'Anonymous';
++// Logical AND Operator
++// true && 'Some age'
++// false && 'Some age'
++const templateTwo = (
++  <div id="intro-block">
++    <h1 className="name">
++    
++      {user.name ? 'yup: ' + user.name : 'Anonymous'}</h1>
++         
++      {(user.age && user.age >= 18) && <p>age: {user.age}</p>}
++    {getLocation(user.location)}
++  </div>
++);
++const appRoot = document.getElementById('app');
++// ReactDOM.render(templateOne, appRoot);
++ReactDOM.render(templateTwo, appRoot);
++// babel src/app.js --out-file=public/scripts/app.js --presets=env,react --watch
++// yarn install
++// live-server public 
+diff --git a/src/app.js b/src/app.js
+index d86a085..18096b6 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,25 +1,35 @@
+-// stateless functional component
+-
+-
++// a simple app to modify arrays & output to the screen
+ class IndecisionApp extends React .Component {
+   constructor(props) {
+     super(props);
+     this.handleDeleteOptions = this.handleDeleteOptions.bind(this);
++    this.handleDeleteOption = this.handleDeleteOption.bind(this);
+     this.handlePick = this.handlePick.bind(this);
+     this.handleAddOption = this.handleAddOption.bind(this);
+     this.state = {
+       options: props.options
+     }
+   }
++
++  // life-cycle Methods
++  componentDidMount() {
++    console.log('componentDidMount, fetching data');
++  }
++  componentDidUpdate(prevProps, prevState) {
++    console.log('componentDidUpdate, saving data');    
++  }
++  componentWillUnmount() {
++    console.log('componentWillUnmount');    
++  }
+   handleDeleteOptions() {
+-    this.setState(() => {
+-      return {
+-        options: []
+-      }
+-    });
++    this.setState(() => ({ options: [] }));
++  }
++  handleDeleteOption(optionToRemove) {
++    // console.log('H-D-O--test', option);
++    this.setState((prevState) => ({
++      options: prevState.options.filter((option) => optionToRemove !== option)
++    }));
+   }
+-  // handlePick = pass down to Action and setup onClick - bind here 
+-  // randomly pick an option and alert it .. 
+   handlePick() {
+     const randomNum = Math.floor(Math.random() * this.state.options.length);
+     const option = this.state.options[randomNum];
+@@ -32,12 +42,9 @@ class IndecisionApp extends React .Component {
+       return 'this option already exists';
+     }
+       
+-    this.setState((prevState) => {
+-      // prevState.options.push(option);
+-      return {
+-        options: prevState.options.concat([option])
+-      }
+-    });
++    this.setState((prevState) => ({ 
++      options: prevState.options.concat([option]) 
++    }));
+   }
+ 
+   render() {
+@@ -54,6 +61,7 @@ class IndecisionApp extends React .Component {
+         <Options 
+           options={this.state.options}
+           handleDeleteOptions={this.handleDeleteOptions}  
++          handleDeleteOption={this.handleDeleteOption}  
+           />
+         <AddOption
+           handleAddOption={this.handleAddOption}  
+@@ -63,7 +71,6 @@ class IndecisionApp extends React .Component {
+   }
+ }
+ 
+-// options: ['Thing one', 'Thing two', 'Thing three']
+ IndecisionApp.defaultProps = {
+   options: []
+ };
+@@ -79,7 +86,7 @@ const Header = (props) => {
+ };
+ 
+ Header.defaultProps = {
+-  title: 'InDecision'
++  title: 'InDecision APP'
+ };
+ 
+ const Action = (props) => {
+@@ -101,8 +108,15 @@ const Options = (props) => {
+       <p>Options are:</p>
+         <ul>
+         {
+-          props.options.map( (option) => 
+-            <Option key={option} className={option} text={option}/>)
++          props.options.map( (option) => (
++            <Option 
++              key={option} 
++              className={option} 
++              optionText={option}
++              handleDeleteOption={props.handleDeleteOption}
++            />)
++          )
++            
+         }
+         </ul>
+         <br/>
+@@ -113,7 +127,15 @@ const Options = (props) => {
+ 
+ const Option = (props) => {
+     return (
+-      <li>{props.text}</li>
++      <li>
++        {props.optionText}
++        <button 
++        onClick={(e) => {
++          props.handleDeleteOption(props.optionText)
++        }}
++        >
++        remove</button>
++      </li>
+     );
+ }
+ 
+@@ -129,23 +151,12 @@ class AddOption extends React.Component {
+     e.preventDefault();
+     const option = e.target.elements.option.value.trim();
+     const error = this.props.handleAddOption(option);
+-    // // this.props.handleAddOption(option);
+-    this.setState(() => {
+-      return { error };
+-    });
+-    // if (option) {
+-    //   this.props.handleAddOption(option);
+-    //   console.log('option:', option);
+-    // }
+-    // this.setState(() => {
+-    //   return { error };
+-    // });
++    this.setState(() => ({ error }));
+   }
+   render() {
+     return (
+       <div>
+         {this.state.error && <p style={{ color: 'red' }}>{this.state.error}</p>}
+-        {/* <form onSubmit={this.props.handleAddOption}> */}
+         <form onSubmit={this.handleAddOption}>
+           <input type='text' name="option" />
+           <button>Add Option</button>
+@@ -155,17 +166,6 @@ class AddOption extends React.Component {
+   }
+ }
+ 
+-// stateless functional component
+-// const User = (props) => {
+-//   return (
+-//     <div>
+-//       <p>Name: {props.name}</p>
+-//       <p>Age: {props.age}</p>
+-//     </div>
+-//   )
+-// }
+-
+-ReactDOM.render(<IndecisionApp options={['devil one', 'Thing two', 'Thing three']}/>, document.getElementById('app'));
+-// ReactDOM.render(<User name="Andrew" age={26}/>, document.getElementById('app'));
++ReactDOM.render(<IndecisionApp />, document.getElementById('app'));
+ 
+ 
+diff --git a/src/test-playground/build-it-visible--v1.js b/src/test-playground/build-it-visible--v1.js
+new file mode 100644
+index 0000000..1c90fad
+--- /dev/null
++++ b/src/test-playground/build-it-visible--v1.js
+@@ -0,0 +1,39 @@
++// console.log('it is running');
++const app = {
++    title: 'Indecision VisiToggle',
++    subtitle: 'ready player one',
++};
++  
++let isVisible = false;
++const onToggleVisibility = (e) => {
++    e.preventDefault();
++    // console.log('target:',e.target);
++    console.log('isVisible:',isVisible);
++
++    isVisible = !isVisible;
++    // if (!isVisible) {
++    //     isVisible = true;
++    // } else {
++    //     isVisible = false;
++    // }
++    render();
++}
++const render = () => {
++    const jsx = (
++      <div key="appwrap" className="wrap">
++        <h1 className="suma-class">{app.title}</h1> 
++          
++        <button onClick={onToggleVisibility}>
++        {isVisible ? 'Hide details' : 'Show details'}
++        </button>
++        {isVisible && (
++            <div>
++            <p>{(isVisible) ? 'option is: ' + app.subtitle : ''}</p>
++            </div>
++        )}
++      </div>
++    );
++    ReactDOM.render(jsx, document.getElementById('app'));
++}
++render();
++  
+\ No newline at end of file
+diff --git a/src/test-playground/build-it-visible.js b/src/test-playground/build-it-visible.js
+new file mode 100644
+index 0000000..81a1dae
+--- /dev/null
++++ b/src/test-playground/build-it-visible.js
+@@ -0,0 +1,41 @@
++console.log('it is running');
++
++const app = {
++    title: 'Indecision VisiToggle',
++    subtitle: 'ready player one',
++};
++  
++class ToggleVisibility extends React.Component {
++  constructor(props) {
++    super(props);
++
++    this.handleToggleVisibility = this.handleToggleVisibility.bind(this);
++    this.state = {
++      visibility: false
++    };
++  }
++  handleToggleVisibility() {
++    this.setState((prevState) => {
++      return {
++        visibility: !prevState.visibility
++      }
++    })
++  }
++  // condition ? expressionIfTrue : expressionIfFalse
++  render() {
++    return (
++      <div>
++        <h1 className="some-class">{app.title}</h1> 
++        <div>{this.state.visibility ? <p>Condition is true</p> : <p>Condition is false</p>}
++</div>
++        <button onClick={this.handleToggleVisibility}>{this.state.visibility ? 'Hide details' : 'Show details'}</button>
++
++        {this.state.visibility && (
++          <div>detail info if true</div>
++        )}
++      </div>
++    )
++  }
++}
++
++ReactDOM.render(<ToggleVisibility/>, document.getElementById('app'));
+diff --git a/src/test-playground/commands-saved.txt b/src/test-playground/commands-saved.txt
+new file mode 100644
+index 0000000..1ff80b5
+--- /dev/null
++++ b/src/test-playground/commands-saved.txt
+@@ -0,0 +1,3 @@
++// babel src/app.js --out-file=public/scripts/app.js --presets=env,react --watch
++// yarn install
++// live-server public 
+\ No newline at end of file
+diff --git a/src/test-playground/counter-example copy.js b/src/test-playground/counter-example copy.js
+new file mode 100644
+index 0000000..50ac817
+--- /dev/null
++++ b/src/test-playground/counter-example copy.js	
+@@ -0,0 +1,69 @@
++// use const / let later 
++// if statements 
++// ternary operators 
++// logical and operator 
++
++const user = {
++    name: 'Stephen',
++    age: 26,
++    location: 'Denver'
++  };
++  function getLocation(location) {
++    if (location) {
++      return <p className="location">
++      location: {location}</p>
++    } else {
++      // return 'is undefined';
++      return undefined;
++    }  
++  }
++  // {user.name.toUpperCase() + "!!"}
++  // console.log('addOneTest');
++  
++  let count = 0;
++  const addOne = () => {
++    count++;
++    renderCounterApp();
++  };
++  const minusOne = () => {
++    count--;
++    renderCounterApp();
++  };
++  const reset = () => {
++    count = 0;
++    renderCounterApp();
++  };
++  const valueOfCount = (count) => {
++    return count;
++  };
++  
++  // ReactDOM.render(templateOne, appRoot);
++  
++  // note: jsx does not have built-in data binding
++  const renderCounterApp = () => {
++    const templateTwo = (
++      <div className="intro-block">
++        <h1 className="name">Count: {count}</h1>
++        <button onClick={addOne}>+1</button>
++        <button onClick={minusOne}>-1</button>
++        <button onClick={reset}>reset</button>
++      </div>
++    );
++    ReactDOM.render(templateTwo, appRoot);
++  };
++  
++  renderCounterApp();
++  
++  
++  // console.log(templateTwo);
++  
++  // make button "-1" - setup minusOne Function 
++  // and register - log "minusOne"
++  
++  // make reset button - setup reset function  to log reset
++  
++  // make button "+1"
++  
++  // babel src/app.js --out-file=public/scripts/app.js --presets=env,react --watch
++  // yarn install
++  // live-server public 
+\ No newline at end of file
+diff --git a/src/test-playground/counter-example.js b/src/test-playground/counter-example.js
+new file mode 100644
+index 0000000..b36fba7
+--- /dev/null
++++ b/src/test-playground/counter-example.js
+@@ -0,0 +1,139 @@
++
++class Counter extends React.Component {
++  
++  constructor(props) {
++    super(props);
++    this.handleAddOne = this.handleAddOne.bind(this);
++    this.handleMinusOne = this.handleMinusOne.bind(this);
++    this.handleReset = this.handleReset.bind(this);
++    this.logThecount = this.logThecount.bind(this);
++    this.state = {
++      count: props.count
++    };
++  }
++  handleAddOne() {
++    this.setState((prevState) => {
++      return {
++        count: prevState.count +1
++      }
++    }); 
++    // this.state.count = this.state.count +1;
++    console.log('handleAddOne: ', this.state.count);
++  }
++  logThecount() {
++    console.log('handleAddOne: ', this.state.count);
++  }
++  handleMinusOne() {
++    this.setState((prevState) => {
++      return {
++        count: prevState.count -1
++      }
++    });
++    console.log('handleMinusOne: ', this.state.count);
++  }
++  handleReset() {
++    this.setState(() => {
++      return {
++        count: 0
++      }
++    });
++    console.log('handleReset: ', this.state.count);
++  }
++
++  render() {
++    return (
++      <div>
++      <h1>Count: {this.state.count}</h1>
++      <button onClick={this.handleAddOne}>+1</button>
++      <button onClick={this.handleMinusOne}>-1</button>
++      <button onClick={this.handleReset}>Reset</button>
++      <button onClick={this.logThecount}>log count</button>
++      </div>
++    )
++  }
++
++
++}
++
++Counter.defaultProps = {
++  count: 0
++};
++
++// Create 3 methods: handleAddOne, handleMinusOne, handleReset
++// use console.log to print method name
++// wire up onClic & bind in the constructor function
++
++// ReactDOM.render(<Counter count={2} />, document.getElementById('app'));
++ReactDOM.render(<Counter />, document.getElementById('app'));
++
++
++
++// // use const / let later 
++// // if statements 
++// // ternary operators 
++// // logical and operator 
++
++// const user = {
++//     name: 'Stephen',
++//     age: 26,
++//     location: 'Denver'
++//   };
++//   function getLocation(location) {
++//     if (location) {
++//       return <p className="location">
++//       location: {location}</p>
++//     } else {
++//       // return 'is undefined';
++//       return undefined;
++//     }  
++//   }
++//   // {user.name.toUpperCase() + "!!"}
++//   // console.log('addOneTest');
++  
++//   let count = 0;
++//   const addOne = () => {
++//     count++;
++//     renderCounterApp();
++//   };
++//   const minusOne = () => {
++//     count--;
++//     renderCounterApp();
++//   };
++//   const reset = () => {
++//     count = 0;
++//     renderCounterApp();
++//   };
++//   const valueOfCount = (count) => {
++//     return count;
++//   };
++  
++//   // ReactDOM.render(templateOne, appRoot);
++  
++//   // note: jsx does not have built-in data binding
++//   const renderCounterApp = () => {
++//     const templateTwo = (
++//       <div className="intro-block">
++//         <h1 className="name">Count: {count}</h1>
++//         <button onClick={addOne}>+1</button>
++//         <button onClick={minusOne}>-1</button>
++//         <button onClick={reset}>reset</button>
++//       </div>
++//     );
++//     ReactDOM.render(templateTwo, appRoot);
++//   };
++  
++//   renderCounterApp();
++  
++  
++//   // console.log(templateTwo);
++  
++//   // make button "-1" - setup minusOne Function 
++//   // and register - log "minusOne"
++  
++//   // make reset button - setup reset function  to log reset
++  
++//   // make button "+1"
++  
++//   // babel src/app.js --out-file=public/scripts/app.js --presets=env,react --watch
++//   // yarn install
++//   // live-server public 
+\ No newline at end of file
+diff --git a/src/test-playground/es6-arrow-function.js b/src/test-playground/es6-arrow-function.js
+new file mode 100644
+index 0000000..f192611
+--- /dev/null
++++ b/src/test-playground/es6-arrow-function.js
+@@ -0,0 +1,46 @@
++console.log('test 1');
++
++// const square = function(x) {
++//     return x * x;
++// };
++// console.log(square(8));
++// const squareArrow = (x) => {
++//     return x * x;
++// };
++// arrow functions are always anonymous
++// so asign them to a variable 
++
++// Now, the arrow function expression syntax 
++
++const squareArrow = (x) => x * x;
++// console.log(squareArrow(7));
++
++// for the arrow function expression syntax 
++// we do not use "return"
++
++// Now, let's create funct called getFirstName 
++// using verbose syntax
++// then with the shorthand syntax 
++// then test to make sure it works
++const user = {
++    name: 'Stephen Harris',
++    age: 26,
++    location: 'Denver'
++}  
++
++const getFirstNameExpression = (user) => {
++    // if (user.name) {
++    //     return 'yup: ' + user.name;
++    // } else {
++    //     return 'Anonymous';
++    // }
++    let firstName = user.name.split(' ')[0];
++    return firstName ? 'y: ' + firstName : 'Anonymous';
++}
++console.log(getFirstNameExpression(user));
++
++const getFirstNameShort = (user) => user.name ? 'usr: ' + user.name.split(' ')[0] : 'Anonymous';
++
++console.log(getFirstNameShort(user));
++
++
+diff --git a/src/test-playground/es6-arrow-function2.js b/src/test-playground/es6-arrow-function2.js
+new file mode 100644
+index 0000000..0b182ad
+--- /dev/null
++++ b/src/test-playground/es6-arrow-function2.js
+@@ -0,0 +1,37 @@
++// arguments object - no longer bound with arrow funct
++
++const add = (a, b) => {
++    // console.log(arguments);
++    return a + b;
++}
++console.log(add(55,1));
++
++// this keyword - no longer bound with arrow funct 
++
++const user = {
++    name: 'Andrew',
++    cities: ['Philadelphia', 'NYC', 'Dublin'],
++    // printPlacesLived: function () {
++    printPlacesLived() {
++        return this.cities.map((city) => this.name + ' has lived in ' + city);
++        // return cityMessages;
++        // this.cities.forEach((city) => {
++        //     console.log(this.name + ' hath lived in ' + city);
++        // });
++    }
++};
++console.log(user.printPlacesLived());
++// user.printPlacesLived();
++
++const multiplier = {
++    // a utility function
++    numbers: [10,20,30],
++    multiplyBy: 3,
++    multiply() {
++        // return this.numbers.map((num) => this.name + ' has lived in ' + num);
++        return this.numbers.map((num) => num * this.multiplyBy);
++    }
++};
++
++console.log(multiplier.multiply());
++
+diff --git a/src/test-playground/es6-classes-1.js b/src/test-playground/es6-classes-1.js
+new file mode 100644
+index 0000000..b5fa3be
+--- /dev/null
++++ b/src/test-playground/es6-classes-1.js
+@@ -0,0 +1,57 @@
++// console.log('running es6 file');
++// a class is a bluePrint
++// convention is to use UpperCase first letter for "Classes"
++
++class Person {
++    // constructor function
++    constructor(name = 'Anon', age = 0) {
++        this.name = name;
++        this.age = age;
++        // console.log('this: ', this);
++    }
++    getGreeting() {
++        return `Hi. i am ${this.name}`;
++        // es6 template strings 
++    }
++    getDescription() {
++        return `${this.name} is ${this.age} years old`;
++    }
++}
++
++class Student extends Person {
++    constructor(name, age, major ) {
++        super(name, age);
++        this.major = major;
++    }
++    hasMajor() {
++        return !!this.major;
++    }
++    getDescription() {
++        let description = super.getDescription();
++
++        if (this.hasMajor) {
++            description += `, Their major is ${this.major}`;
++        }
++        return description;
++    }
++}
++
++class Traveler extends Person {
++    constructor(name, age, location) {
++        super(name, age) ;
++        this.location = location;
++    }
++    getGreeting() {
++        let greeting = super.getGreeting();
++
++        if (this.location) {
++            greeting += `, i'm visiting from ${this.location}`;
++        }
++        return greeting;
++    }
++}
++
++const me = new Traveler('Andrew Mead', 27, 'Philadelphia');
++console.log(me.getGreeting());
++const other = new Traveler(undefined, undefined, 'nowhere');
++console.log(other.getGreeting());
+diff --git a/src/test-playground/es6const.js b/src/test-playground/es6const.js
+new file mode 100644
+index 0000000..039b425
+--- /dev/null
++++ b/src/test-playground/es6const.js
+@@ -0,0 +1,33 @@
++var nameVar = "Andrew";
++var nameVar = "Mike";
++console.log('nameVar: ', nameVar );
++
++let nameLet = 'Jen';
++nameLet = 'Jule';
++console.log('nameLet: ', nameLet );
++
++// use const by default
++// then if we do reassign, use LET
++const nameConst = 'Frank';
++// nameConst = 'Bob';
++console.log('nameConst: ', nameConst );
++
++
++function getPetName() {
++    var petName = 'Hal';
++    return petName;
++}
++
++getPetName();
++// console.log('petName: ', petName );
++
++// Block Scoping 
++
++const fullName = 'Andrew Meed';
++let firstName;
++
++if (fullName) {
++    firstName = fullName.split(' ')[0];
++    console.log('firstName: ', firstName );
++}
++console.log('firstName: ', firstName );
+diff --git a/src/test-playground/jsx-indecision-v1.js b/src/test-playground/jsx-indecision-v1.js
+new file mode 100644
+index 0000000..4fc5220
+--- /dev/null
++++ b/src/test-playground/jsx-indecision-v1.js
+@@ -0,0 +1,95 @@
++console.log('App.js is running!');
++
++// T2 instructions
++// create app object title/subtitle 
++// use title/subtitle in the template
++// render template 
++
++
++// only render subtitle (and p tag) if subtitle exists - (w/ Logical and Operator)
++//render new p tag - if options.length > 0 "Here are your options" "No Options"
++
++const app = {
++  title: 'Indecision App v1',
++  subtitle: 'to decide your fate for you',
++  options: [],
++  question1: 'question 1 text',
++  question2: 'other text for Q2',
++};
++
++const onFormSubmit = (e) => {
++  e.preventDefault();
++  
++  console.log('target:',e.target);
++  const option = e.target.elements.option.value;
++
++  if (option) {
++    app.options.push(option);
++    console.log('options:',app.options);
++    
++    e.target.elements.option.value = '';
++
++    render();
++  }
++}
++
++const onRemoveAll = () => {
++  app.options = [];
++  // app.options.length = 0;
++  console.log('options:',app.options);
++  render();
++}
++
++const onMakeDecision = () => {
++  const randomNum = Math.floor(Math.random() * app.options.length);
++  const option = app.options[randomNum];
++  console.log('RandomNum', randomNum);
++  console.log('option', option);
++  alert(option);
++}
++
++const appRoot = document.getElementById('app');
++const numbers = [55, 101, 100];
++
++const render = () => {
++  const templateOne = (
++    <div key="appwrap" className="wrap">
++      <h1 className="suma-class">{app.title}</h1> 
++      
++      {(app.subtitle) && <p className="subttile">{app.subtitle}</p>}
++
++      <p>{(app.options && app.options.length > 0) ? 'Here are your options: ' + app.options : 'No options'}</p>
++
++      {/* onClick={test} */}
++      <button disabled={app.options.length == 0 } onClick={onMakeDecision}>What should I do?</button>
++      
++      <button onClick={onRemoveAll}>Remove All</button>
++      {/* <button >Show Details</button> */}
++      {/* <p>{app.options.length}</p> */}
++      <ol className="questionList">
++        {
++          app.options.map( (option) => {
++            return <li key={option} className={option}>option: {option}</li>;
++          })
++        }
++      </ol>
++      <form onSubmit={onFormSubmit}>
++        <input type="text" name="option" />
++        <button>Add Option</button>
++      </form>
++    </div>
++  );
++
++  ReactDOM.render(templateOne, appRoot);
++}
++render();
++
++
++
++// create render function that renders the new JSX
++// Call it right away
++// then call it after aptions array is added to 
++
++
++// live-server public 
++// babel src/app.js --out-file=public/scripts/app.js --presets=env,react --watch
+-- 
+2.39.5 (Apple Git-154)
+
