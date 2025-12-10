@@ -128,7 +128,9 @@ const Options = (props) => {
 const Option = (props) => {
     return (
       <li>
-        {props.optionText}
+        <span className="optionText" style={{ padding: '0 6px' }}>
+         {props.optionText}  
+      </span> 
         <button 
         onClick={(e) => {
           props.handleDeleteOption(props.optionText)
@@ -166,6 +168,6 @@ class AddOption extends React.Component {
   }
 }
 
-ReactDOM.render(<IndecisionApp />, document.getElementById('app'));
+ReactDOM.render(<IndecisionApp options={['dev-den', 'new-brew']} />, document.getElementById('app'));
 
 

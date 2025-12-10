@@ -191,7 +191,11 @@ var Option = function Option(props) {
   return React.createElement(
     'li',
     null,
-    props.optionText,
+    React.createElement(
+      'span',
+      { className: 'optionText', style: { padding: '0 6px' } },
+      props.optionText
+    ),
     React.createElement(
       'button',
       {
@@ -257,4 +261,4 @@ var AddOption = function (_React$Component2) {
   return AddOption;
 }(React.Component);
 
-ReactDOM.render(React.createElement(IndecisionApp, null), document.getElementById('app'));
+ReactDOM.render(React.createElement(IndecisionApp, { options: ['dev-den', 'new-brew'] }), document.getElementById('app'));
