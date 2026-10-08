@@ -8,9 +8,61 @@ class Counter extends React.Component {
     this.handleReset = this.handleReset.bind(this);
     this.logThecount = this.logThecount.bind(this);
     this.state = {
-      count: props.count
+      count: 0
     };
   }
+  // Utilizing life-cycle Methods
+  componentDidMount() {
+    // console.log('componentDidMount, fetching data');
+
+    const stringCount = localStorage.getItem('count');
+    console.log('c-DidMount, stringCount: ', stringCount);
+    
+    // const varTypeString = typeof stringCount;
+    // console.log('c-DidMount, varTypeString: ', varTypeString);
+
+    // const numCount = JSON.parse(stringCount, 10);
+    const count = parseInt(stringCount, 10);
+    // console.log('c-DidMount, numCount: ', numCount);
+  
+    // const varType = typeof numCount;
+    // console.log('c-DidMount, varType: ', varType);
+    // const numCount = stringCount;
+    // if (!isNaN(numCount) || numCount > 0) { 
+    //   // console.log('componentDidMount, no data to fetch');
+    //   console.log('componentDidMount, num > 0');
+    //   return;
+    // }
+
+    // if (typeof count === 'number') {
+    if (!isNaN(count)) {
+      console.log('count is number: ', count);
+      this.setState(() => ({ count }));
+    } else {
+      console.log('componentDidMount, no data to fetch');
+    }
+
+    // try {
+      
+
+    // } catch (e) {
+    //   // do nothing
+    // } 
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log('componentDidUpdate, saving data');
+
+    if (prevState.count !== this.state.count) {
+      // const json = JSON.stringify(this.state.count);
+      // const num = parseInt(json, 10);
+      // localStorage.setItem('count', num);
+      localStorage.setItem('count', this.state.count);
+      console.log('saving data, count changed');
+    }
+  }
+  
+
   handleAddOne() {
     this.setState((prevState) => {
       return {
@@ -55,9 +107,9 @@ class Counter extends React.Component {
 
 }
 
-Counter.defaultProps = {
-  count: 0
-};
+// Counter.defaultProps = {
+//   count: 0
+// };
 
 // Create 3 methods: handleAddOne, handleMinusOne, handleReset
 // use console.log to print method name
