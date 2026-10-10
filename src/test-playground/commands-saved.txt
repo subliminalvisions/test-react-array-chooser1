@@ -2,3 +2,9 @@
 // babel src/test-playground/counter-example.js --out-file=public/scripts/app.js --presets=env,react --watch
 // yarn install
 // live-server public 
+
+
+npm i -D live-server babel-cli@6.24.1 
+
+npm run build
+npm run serve
